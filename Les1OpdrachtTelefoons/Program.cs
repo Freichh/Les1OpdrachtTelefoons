@@ -3,16 +3,18 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace Les1OpdrachtTelefoons
 {
     class Program
     {
-        static List<Phone> phoneList = InMemoryData.phoneList;
+        readonly static List<Phone> phoneList = InMemoryData.GetList();
 
         static void Main(string[] args)
         {
+            _ = args;
             MainMenu();
         }
 
@@ -24,19 +26,16 @@ namespace Les1OpdrachtTelefoons
             Console.BufferWidth = 60;
 
             Console.WriteLine("Beschikbare telefoons. (Kies nummer voor meer informatie...)");
-            createBreakLines();
+            CreateBreakLines();
 
             for (int i = 0; i < phoneList.Count; i++)
             {
                 Console.WriteLine($"{i + 1} - {phoneList[i].Brand} {phoneList[i].Type}");
             }
 
-            createBreakLines();
-
+            CreateBreakLines();
             GetUserInput();
         }
-
-
 
         static void GetUserInput()
         {
@@ -47,6 +46,11 @@ namespace Les1OpdrachtTelefoons
                 string message = "Voer een juist nummer in!";
                 OutputError(message);
             }
+            // TODO: check op id of bestaat
+            //if (phoneList.Where(x => phoneList.Contains(userInput)))
+            //{
+
+            //}
 
             if (userInput > phoneList.Count || userInput < 1)
             {
@@ -55,30 +59,26 @@ namespace Les1OpdrachtTelefoons
                 GetUserInput();
             }
 
-            showPhoneDetails(userInput-1);
+            ShowPhoneDetails(userInput);
         }
 
-        static void showPhoneDetails(int phoneNumber)
+        static void ShowPhoneDetails(int phoneNumber)
         {
             Console.OutputEncoding = Encoding.UTF8;
-            CultureInfo culture = new CultureInfo("nl-NL"); 
             Console.Clear();
 
-            Console.WriteLine($"Merk: {phoneList[phoneNumber].Brand} | Type: {phoneList[phoneNumber].Type} | " +
-                $"Prijs: {phoneList[phoneNumber].Price:C2}");
-            createBreakLines();
+            Phone phone = phoneList.FirstOrDefault(x => x.Id == phoneNumber);
+            
+            Console.WriteLine($"Merk: {phone.Brand} | Type: {phone.Type} | Prijs: {phone.Price:C2}");
+            CreateBreakLines();
 
             Console.WriteLine($"\nBeschrijving:");
-            createBreakLines();
+            CreateBreakLines();
 
-            string description = phoneList[phoneNumber].Description;
-
-            foreach (string substring in SplitSentence(description, 30))
-            {
+            foreach (string substring in SplitSentence(phone.Description, 30))
                 Console.WriteLine(substring);
-            }
 
-            createBreakLines();
+            CreateBreakLines();
             Console.WriteLine("\n\nDruk een willekeurige toets om terug te keren...");
 
             Console.ReadKey();
@@ -99,28 +99,27 @@ namespace Les1OpdrachtTelefoons
         static List<string> SplitSentence(string sentence, int chunkLength)
         {
             List<string> wordsList = new();
-
             StringBuilder sb = new();
-
-            string[] wordsArray = sentence.Split(); // Alle losse woorden in Array
+            
+            string[] wordsArray = sentence.Split(); // alle losse woorden in Array
 
             for (int i = 0; i < wordsArray.Length; i++) // loop door alle woorden in array
             {
-                if (sb.Length > chunkLength) // als string groter dan chunk, ga naar volgende index en voeg toe aan SB
+                if (sb.Length > chunkLength) // als StringBuilder groter dan chunk, voeg SB toe aan List en leeg SB
                 {
                     wordsList.Add(sb.ToString()); // voeg sb toe aan list
                     sb.Clear(); // clear sb voor nieuwe ronde
                 }
 
-                sb.Append($"{wordsArray[i]} "); // voeg woord toe aan sb
+                sb.Append($"{wordsArray[i]} "); // voeg woord toe aan SB
 
-                if (i == wordsArray.Length-1) // laatste woord
+                if (i == wordsArray.Length-1) // als laatste woord
                     wordsList.Add(sb.ToString()); // voeg laatste stukje sb toe aan list
             }
             return wordsList;
         }
 
-        static void createBreakLines()
+        static void CreateBreakLines()
         {
             Console.WriteLine(new string('-', Console.BufferWidth));
         }
